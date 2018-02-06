@@ -3,8 +3,8 @@
  * \file schedule_factory.h
  * \brief Schedule factory information structor.
  */
-#ifndef NNVM_SCHEDULE_FACTORY_H_
-#define NNVM_SCHEDULE_FACTORY_H_
+#ifndef NNVM_COMPILER_SCHEDULE_FACTORY_H_
+#define NNVM_COMPILER_SCHEDULE_FACTORY_H_
 
 #include <dmlc/parameter.h>
 #include <nnvm/compiler/op_attr_types.h>
@@ -29,7 +29,7 @@ using FTVMScheduleBuilder = std::function<
  * \brief Schedule factory structure
  */
 class NNVM_DLL ScheduleFactory {
-public:
+ public:
   /*! \brief name of the schedule */
   std::string name;
   /* \brief the generic builder */
@@ -108,4 +108,4 @@ inline FTVMSchedule MakeScheduleQuery(const std::string& name) {
 }  // namespace compiler
 }  // namespace nnvm
 
-#endif  // NNVM_SCHEDULE_FACTORY_H_
+#endif  // NNVM_COMPILER_SCHEDULE_FACTORY_H_

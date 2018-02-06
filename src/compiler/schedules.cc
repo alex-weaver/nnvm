@@ -3,6 +3,11 @@
  * \file schedule_factory.cc
  * \brief Support for schedule registry.
  */
+#include <memory>
+#include <atomic>
+#include <mutex>
+#include <unordered_set>
+
 #include <tvm/tvm.h>
 #include <nnvm/base.h>
 #include <nnvm/compiler/schedule_factory.h>
@@ -21,11 +26,6 @@
 #include "topi/x86/bnn.h"
 #include "topi/x86/default.h"
 #include "topi/x86/injective.h"
-
-#include <memory>
-#include <atomic>
-#include <mutex>
-#include <unordered_set>
 
 namespace nnvm {
 namespace compiler {
