@@ -9,6 +9,7 @@
 #include <nnvm/node.h>
 #include <nnvm/op_attr_types.h>
 #include <nnvm/compiler/op_attr_types.h>
+#include <nnvm/compiler/schedule_factory.h>
 #include <nnvm/top/nn.h>
 #include "./nn_common.h"
 #include "../op_common.h"
@@ -22,7 +23,7 @@ namespace top {
 
 using tvm::Tensor;
 using tvm::Array;
-using nnvm::compiler::FTVMCompute;
+using namespace nnvm::compiler;
 
 // dense
 DMLC_REGISTER_PARAMETER(DenseParam);
@@ -82,6 +83,23 @@ If ``use_bias`` is set to be false, then the ``bias`` term is ignored.
 .set_attr<FListInputNames>("FListInputNames", UseBiasListInputNames<DenseParam>)
 .set_attr<FInferShape>("FInferShape", DenseInferShape)
 .set_attr<FInferType>("FInferType", ElemwiseType<-1, 1>)
+.set_attr<FTVMCompute>(
+  "FTVMCompute", [](const NodeAttrs& attrs,
+                    const Array<Tensor>& inputs,
+                    const Array<Tensor>& out_info) {
+    Tensor bias_val;
+    Tensor* bias;
+    const DenseParam& param = nnvm::get<DenseParam>(attrs.parsed);
+    if (param.use_bias) {
+      bias_val = inputs[2];
+      bias = &bias_val;
+    } else {
+      bias = nullptr;
+    }
+    return Array<Tensor>{ topi::nn::dense(inputs[0], inputs[1], bias) };
+})
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("dense"))
+.set_attr<TOpPattern>("TOpPattern", kOutEWiseFusable)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds) {
@@ -126,6 +144,8 @@ NNVM_REGISTER_ELEMWISE_UNARY_OP(relu)
                     const Array<Tensor>& out_info) {
     return Array<Tensor>{ topi::relu(inputs[0], 0.0f) };
   })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("injective"))
+.set_attr<TOpPattern>("TOpPattern", kElemWise)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds) {
@@ -283,6 +303,8 @@ NNVM_REGISTER_OP(softmax)
     const SoftmaxParam& param = nnvm::get<SoftmaxParam>(attrs.parsed);
     return Array<Tensor>{ topi::nn::softmax(inputs[0], param.axis) };
   })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("softmax"))
+.set_attr<TOpPattern>("TOpPattern", kOpaque)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds) {
@@ -339,6 +361,8 @@ NNVM_REGISTER_OP(log_softmax)
     CHECK_EQ(param.axis, -1) << "Currently only axis=-1 is supported";
     return Array<Tensor>{ topi::nn::log_softmax(inputs[0]) };
   })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("softmax"))
+.set_attr<TOpPattern>("TOpPattern", kOpaque)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds) {
@@ -395,6 +419,8 @@ NNVM_REGISTER_OP(leaky_relu)
     const LeakyReLUParam& param = nnvm::get<LeakyReLUParam>(attrs.parsed);
     return Array<Tensor>{ topi::leaky_relu<float>(inputs[0], 0.0, param.alpha) };
   })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("injective"))
+.set_attr<TOpPattern>("TOpPattern", kElemWise)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds) {
@@ -518,6 +544,8 @@ NNVM_REGISTER_OP(pad)
     }
     return Array<Tensor>{ topi::pad(inputs[0], pad_before, pad_after, param.pad_value) };
 })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("injective"))
+.set_attr<TOpPattern>("TOpPattern", kInjective)
 .set_support_level(1);
 
 }  // namespace top

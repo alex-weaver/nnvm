@@ -9,6 +9,7 @@
 #include <nnvm/node.h>
 #include <nnvm/op_attr_types.h>
 #include <nnvm/compiler/op_attr_types.h>
+#include <nnvm/compiler/schedule_factory.h>
 #include <nnvm/compiler/util.h>
 #include <nnvm/top/tensor.h>
 #include "../op_common.h"
@@ -144,6 +145,9 @@ inline bool BinaryBroadcastShape(const nnvm::NodeAttrs& attrs,
         return Array<Tensor>{                                       \
           topi::name(inputs[0], inputs[1]) };                       \
     })                                                              \
+  .set_attr<FTVMSchedule>(                                          \
+    "FTVMSchedule", MakeScheduleQuery("injective"))                 \
+  .set_attr<TOpPattern>("TOpPattern", kBroadcast)                   \
   .add_argument("lhs", "Tensor", "first input")                     \
   .add_argument("rhs", "Tensor", "second input")
 

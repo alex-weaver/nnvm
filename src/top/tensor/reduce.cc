@@ -7,6 +7,7 @@
 #include <nnvm/node.h>
 #include <nnvm/op_attr_types.h>
 #include <nnvm/compiler/op_attr_types.h>
+#include <nnvm/compiler/schedule_factory.h>
 #include <nnvm/compiler/util.h>
 #include <nnvm/top/tensor.h>
 #include "../op_common.h"
@@ -154,6 +155,8 @@ Example::
     return Array<Tensor>{
       topi::sum(inputs[0], axis, param.keepdims) };
 })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("reduce"))
+.set_attr<TOpPattern>("TOpPattern", kCommReduce)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds){
@@ -180,6 +183,8 @@ NNVM_REGISTER_REDUCE_OP(max)
     return Array<Tensor>{
       topi::max(inputs[0], axis, param.keepdims) };
 })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("reduce"))
+.set_attr<TOpPattern>("TOpPattern", kCommReduce)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds){
@@ -212,6 +217,8 @@ NNVM_REGISTER_REDUCE_OP(min)
     return Array<Tensor>{
       topi::min(inputs[0], axis, param.keepdims) };
 })
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("reduce"))
+.set_attr<TOpPattern>("TOpPattern", kCommReduce)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
                   const std::vector<NodeEntry>& ograds){
