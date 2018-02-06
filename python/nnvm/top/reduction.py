@@ -5,8 +5,6 @@ from __future__ import absolute_import
 import tvm
 import topi
 import topi.cuda
-from . import registry as reg
-from .registry import OpPattern
 
 def _schedule_reduce(_, outs, target):
     """Generic schedule for reduce"""

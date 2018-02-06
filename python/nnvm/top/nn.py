@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import tvm
 import topi
 from topi.util import get_const_int
-from .tensor import _fschedule_broadcast
 from . import registry as reg
 from .registry import OpPattern
 
