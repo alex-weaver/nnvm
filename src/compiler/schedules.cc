@@ -3,11 +3,6 @@
  * \file schedule_factory.cc
  * \brief Support for schedule registry.
  */
-#include <memory>
-#include <atomic>
-#include <mutex>
-#include <unordered_set>
-
 #include <tvm/tvm.h>
 #include <nnvm/base.h>
 #include <nnvm/compiler/schedule_factory.h>
