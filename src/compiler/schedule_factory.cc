@@ -32,5 +32,16 @@ tvm::Schedule ScheduleFactory::get_schedule(const tvm::Target& target,
   return generic_builder(target, outs);
 }
 
+FTVMSchedule MakeScheduleQuery(const std::string& name) {
+  return [name](const NodeAttrs& attrs,
+    const Array<Tensor>& outs,
+    const std::string& target) {
+      auto t = tvm::Target::create(target);
+      ScheduleFactory& factory =
+        ::dmlc::Registry<ScheduleFactory>::Get()->__REGISTER_OR_GET__(name);
+      return factory.get_schedule(t, outs);
+  };
+}
+
 }  // namespace compiler
 }  // namespace nnvm

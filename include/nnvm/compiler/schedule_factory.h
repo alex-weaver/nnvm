@@ -94,16 +94,7 @@ inline ScheduleFactory& ScheduleFactory::add_schedule(const std::vector<std::str
  *
  * \return The FTVMSchedule
  */
-inline FTVMSchedule MakeScheduleQuery(const std::string& name) {
-  return [name](const NodeAttrs& attrs,
-    const Array<Tensor>& outs,
-    const std::string& target) {
-      auto t = tvm::Target::create(target);
-      ScheduleFactory& factory =
-        ::dmlc::Registry<ScheduleFactory>::Get()->__REGISTER_OR_GET__(name);
-      return factory.get_schedule(t, outs);
-  };
-}
+FTVMSchedule MakeScheduleQuery(const std::string& name);
 
 }  // namespace compiler
 }  // namespace nnvm
