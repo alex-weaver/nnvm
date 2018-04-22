@@ -15,6 +15,14 @@
 namespace nnvm {
 namespace top {
 
+/*
+* \brief Helper function to wrap a GenericFunc an expose it as an FTVMSchedule function.
+* The wrapper sets up the correct tvm::Target context before calling the named GenericFunc.
+*
+* \param name The name of the GenericFunc to wrap.
+*
+* \return An FTVMSchedule that delegates its implementation to the named GenericFunc.
+*/
 inline nnvm::compiler::FTVMSchedule MakeScheduleQuery(const std::string& name) {
   return [name](const NodeAttrs& attrs,
                 const tvm::Array<tvm::Tensor>& outs,
