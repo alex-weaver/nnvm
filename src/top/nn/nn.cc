@@ -582,6 +582,8 @@ where :math:`*` is an channelwise multiplication for each sample in the
     const PReLUParam& param = nnvm::get<PReLUParam>(attrs.parsed);
     return Array<Tensor>{ topi::prelu<float>(inputs[0], inputs[1], param.axis)};
   })
+  .set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("schedule_injective"))
+  .set_attr<TOpPattern>("TOpPattern", kElemWise)
 .set_support_level(4);
 
 DMLC_REGISTER_PARAMETER(PadParam);
