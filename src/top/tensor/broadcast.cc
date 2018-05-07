@@ -222,7 +222,7 @@ inline bool BinaryBroadcastCorrectLayout(const NodeAttrs& attrs,
           topi::name(inputs[0], inputs[1]) };                       \
     })                                                              \
   .set_attr<FTVMSchedule>(                                          \
-    "FTVMSchedule", MakeScheduleQuery("injective"))                 \
+    "FTVMSchedule", MakeScheduleQuery("schedule_injective"))        \
   .set_attr<TOpPattern>("TOpPattern", kBroadcast)                   \
   .add_argument("lhs", "Tensor", "first input")                     \
   .add_argument("rhs", "Tensor", "second input")

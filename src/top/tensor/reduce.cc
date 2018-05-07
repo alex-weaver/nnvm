@@ -158,7 +158,7 @@ Example::
     return Array<Tensor>{
       topi::sum(inputs[0], axis, param.keepdims) };
 })
-.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("reduce"))
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("schedule_reduce"))
 .set_attr<TOpPattern>("TOpPattern", kCommReduce)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
@@ -186,7 +186,7 @@ NNVM_REGISTER_REDUCE_OP(max)
     return Array<Tensor>{
       topi::max(inputs[0], axis, param.keepdims) };
 })
-.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("reduce"))
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("schedule_reduce"))
 .set_attr<TOpPattern>("TOpPattern", kCommReduce)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
@@ -220,7 +220,7 @@ NNVM_REGISTER_REDUCE_OP(min)
     return Array<Tensor>{
       topi::min(inputs[0], axis, param.keepdims) };
 })
-.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("reduce"))
+.set_attr<FTVMSchedule>("FTVMSchedule", MakeScheduleQuery("schedule_reduce"))
 .set_attr<TOpPattern>("TOpPattern", kCommReduce)
 .set_attr<FGradient>(
   "FGradient", [](const NodePtr& n,
