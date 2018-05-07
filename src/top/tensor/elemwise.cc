@@ -9,6 +9,7 @@
 #include <nnvm/compiler/op_attr_types.h>
 #include <nnvm/compiler/schedule_factory.h>
 #include <nnvm/top/tensor.h>
+#include <nnvm/top/util.h>
 #include <cmath>
 #include "../op_common.h"
 #include "../elemwise_op_common.h"

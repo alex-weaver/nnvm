@@ -86,16 +86,6 @@ inline ScheduleFactory& ScheduleFactory::add_schedule(const std::vector<std::str
   return *this;
 }
 
-/*!
- * \brief Helper function to construct an FTVMSchedule which queries the named
- * ScheduleFactory for a target-specific schedule.
- *
- * \param name The name of the ScheduleFactory to query
- *
- * \return The FTVMSchedule
- */
-FTVMSchedule MakeScheduleQuery(const std::string& name);
-
 }  // namespace compiler
 }  // namespace nnvm
 

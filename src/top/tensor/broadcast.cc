@@ -12,6 +12,7 @@
 #include <nnvm/compiler/schedule_factory.h>
 #include <nnvm/compiler/util.h>
 #include <nnvm/top/tensor.h>
+#include <nnvm/top/util.h>
 #include "../op_common.h"
 #include "../elemwise_op_common.h"
 #include "topi/broadcast.h"
