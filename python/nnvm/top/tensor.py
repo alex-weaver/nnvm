@@ -5,6 +5,8 @@ from __future__ import absolute_import
 import tvm
 import topi
 import topi.cuda
+from . import registry as reg
+from .registry import OpPattern
 
 def _schedule_injective(_, outs, target):
     """Generic schedule for binary bcast"""
