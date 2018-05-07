@@ -20,11 +20,18 @@ def compute_conv2d(attrs, inputs, _):
     channels = attrs.get_int("channels")
     layout = attrs["layout"]
     assert layout == "NCHW" or layout == "NHWC"
-    assert dilation == (1, 1), "not support dilate now"
+    (dilation_h, dilation_w) = dilation
+    if dilation_h < 1 or dilation_w < 1:
+        raise ValueError("dilation should be positive value")
+    elif layout == "NCHW":
+        kernel = topi.nn.dilate(inputs[1], [1, 1, dilation_h, dilation_w])
+    else: #layout == NHWC
+        kernel = topi.nn.dilate(inputs[1], [1, dilation_h, dilation_w, 1])
+
     if groups == 1:
-        out = topi.nn.conv2d(inputs[0], inputs[1], strides, padding, layout)
+        out = topi.nn.conv2d(inputs[0], kernel, strides, padding, layout)
     elif groups == get_const_int(inputs[0].shape[1]) and groups == channels:
-        out = topi.nn.depthwise_conv2d_nchw(inputs[0], inputs[1], strides, padding)
+        out = topi.nn.depthwise_conv2d_nchw(inputs[0], kernel, strides, padding)
     else:
         raise ValueError("not support arbitrary group number for now")
     if attrs.get_bool("use_bias"):
@@ -48,6 +55,42 @@ def schedule_conv2d(attrs, outs, target):
 
 reg.register_pattern("conv2d", OpPattern.OUT_ELEMWISE_FUSABLE)
 
+# convolution NCHWc
+@reg.register_compute("_contrib_conv2d_NCHWc")
+def compute_contrib_conv2d_NCHWc(attrs, inputs, _):
+    """Compute definition of conv2d NCHWc"""
+    padding = attrs.get_int_tuple("padding")
+    strides = attrs.get_int_tuple("strides")
+    dilation = attrs.get_int_tuple("dilation")
+    kh, kw = attrs.get_int_tuple('kernel_size')
+    groups = attrs.get_int("groups")
+    channels = attrs.get_int("channels")
+    assert dilation == (1, 1), "not support dilate now"
+    if groups == 1:
+        out = topi.nn.conv2d_NCHWc(inputs[0], inputs[1], channels, (kh, kw), strides, padding)
+    else:
+        raise ValueError("not support arbitrary group number > 1 for now")
+    if attrs.get_bool("use_bias"):
+        bias = inputs[2]
+        bias = topi.expand_dims(bias, axis=1, num_newaxis=2)
+        out = topi.broadcast_add(out, bias)
+    return out
+
+@reg.register_schedule("_contrib_conv2d_NCHWc")
+def schedule_contrib_conv2d_NCHWc(attrs, outs, target):
+    """Schedule definition of conv2d NCHWc"""
+    groups = attrs.get_int("groups")
+    kh, kw = attrs.get_int_tuple('kernel_size')
+    oc = attrs.get_int("channels")
+    padding = attrs.get_int_tuple("padding")
+    strides = attrs.get_int_tuple("strides")
+    with tvm.target.create(target):
+        if groups == 1:
+            return topi.generic.schedule_conv2d_NCHWc(oc, (kh, kw), strides, padding, outs)
+        else:
+            raise ValueError("not support group number > 1 for now")
+
+reg.register_pattern("_contrib_conv2d_NCHWc", OpPattern.OUT_ELEMWISE_FUSABLE)
 
 # conv2d_transpose
 @reg.register_compute("conv2d_transpose")

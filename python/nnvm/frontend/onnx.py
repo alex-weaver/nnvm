@@ -1,11 +1,12 @@
 # pylint: disable=import-self, invalid-name, unused-argument
 """ONNX: Open Neural Network Exchange frontend."""
 from __future__ import absolute_import as _abs
+import numpy as np
 import tvm
 from .. import symbol as _sym
 from .. import graph as _graph
 from ..compiler import graph_util
-from .common import get_nnvm_op, Renamer, AttrConverter as AttrCvt
+from .common import get_nnvm_op, Renamer, SymbolTable, AttrConverter as AttrCvt
 
 __all__ = ['from_onnx']
 
@@ -245,6 +246,8 @@ class Reciprocal(OnnxOpConverter):
 
 
 class Reshape(OnnxOpConverter):
+    """ Operator converter for Reshape.
+    """
 
     @classmethod
     def _impl_v1(cls, inputs, attr, params):
@@ -252,9 +255,11 @@ class Reshape(OnnxOpConverter):
 
     @classmethod
     def _impl_v5(cls, inputs, attr, params):
-        return _sym.reshape(
-            inputs[0],
-            shape=tuple(params[inputs[1].list_output_names()[0]].asnumpy()))
+        if inputs[1].list_output_names()[0] in params:
+            shape = tuple(params[inputs[1].list_output_names()[0]].asnumpy())
+        else:
+            raise RuntimeError('Shape is not contained in graph initializer.')
+        return _sym.reshape(inputs[0], shape=shape)
 
 
 class Scale(OnnxOpConverter):
@@ -320,6 +325,18 @@ class ThresholdedRelu(OnnxOpConverter):
     def _impl_v1(cls, inputs, attr, params):
         alpha = float(attr.get('alpha', 0.0))
         return _sym.relu(inputs[0] - alpha)
+
+
+class ImageScaler(OnnxOpConverter):
+
+    @classmethod
+    def _impl_v1(cls, inputs, attr, params):
+        channelScale = attr['scale']
+        bias_attr = attr['bias']
+        bias = SymbolTable().new_const(np.array(bias_attr).reshape([3, 1, 1]))
+        scaledChannel = _sym.__mul_scalar__(inputs[0], scalar=channelScale)
+        ret = _sym.broadcast_add(scaledChannel, bias)
+        return ret
 
 
 def _revert_caffe2_pad(attr):
@@ -410,7 +427,7 @@ def _get_convert_map(opset):
         'Scale': Scale.get_converter(opset),
         # 'GRUUnit'
         # 'ATen'
-        # 'ImageScaler'
+        'ImageScaler': ImageScaler.get_converter(opset),
         # 'MeanVarianceNormalization'
         # 'Crop'
         # 'Embedding'
