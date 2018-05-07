@@ -22,7 +22,7 @@ namespace compiler {
 
 tvm::Schedule ScheduleFactory::get_schedule(const tvm::Target& target,
                                             const tvm::Array<tvm::Tensor>& outs) {
-  for (auto &k : target.keys) {
+  for (auto &k : target->keys) {
     auto iter = builders.find(k);
     if (iter != builders.end()) {
       return iter->second(target, outs);
